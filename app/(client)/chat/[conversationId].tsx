@@ -1,3 +1,4 @@
+import { ChatAttachment } from '../../../components/ChatAttachment';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
@@ -9,7 +10,6 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  Image,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -111,8 +111,8 @@ export default function ConversationScreen() {
     setUploading(true);
     try {
       const fileName = asset.fileName ?? `photo-${Date.now()}.jpg`;
-      const url = await uploadChatAttachment(conversationId, asset.uri, fileName);
-      await sendMessage(conversationId, user.id, user.type, '', url, 'image');
+      const attachmentPath = await uploadChatAttachment(conversationId, asset.uri, fileName, asset.mimeType);
+      await sendMessage(conversationId, user.id, user.type, '', attachmentPath, 'image');
     } catch (err) {
       console.error('Attachment upload failed:', err);
     } finally {
@@ -153,7 +153,7 @@ export default function ConversationScreen() {
     return (
       <View style={[styles.messageBubble, own ? styles.messageOwn : styles.messageOther]}>
         {item.attachment_url ? (
-          <Image source={{ uri: item.attachment_url }} style={styles.attachmentImage} resizeMode="cover" />
+          <ChatAttachment path={item.attachment_url} style={styles.attachmentImage} />
         ) : null}
         {item.content ? (
           <Text style={[styles.messageText, own ? styles.messageTextOwn : styles.messageTextOther]}>{item.content}</Text>

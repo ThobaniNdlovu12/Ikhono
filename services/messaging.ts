@@ -2,14 +2,11 @@ import { supabase } from './supabase'
 
 export async function getSupabaseProfessionalIdByLegacyId(legacyId: number | string) {
   const { data, error } = await supabase
-    .from('professionals')
-    .select('id')
-    .eq('legacy_id', legacyId)
-    .maybeSingle()
+    .rpc('find_linked_website_professional', { website_id: legacyId })
 
   if (error) throw error
   if (!data) throw new Error(`No Supabase professional found for legacy_id ${legacyId}`)
-  return data.id
+  return data
 }
 
 export async function getOrCreateConversation(
@@ -83,16 +80,25 @@ export async function sendMessage(
   return data
 }
 
-export async function uploadChatAttachment(conversationId: string, uri: string, fileName: string) {
-  const ext = fileName.split('.').pop() ?? 'jpg'
-  const path = `${conversationId}/${Date.now()}.${ext}`
-  const blob = await (await fetch(uri)).blob()
+export async function uploadChatAttachment(
+  conversationId: string,
+  uri: string,
+  fileName: string,
+  contentType?: string | null
+) {
+  const extension = fileName.match(/\.([a-zA-Z0-9]{1,8})$/)?.[1].toLowerCase() ?? 'jpg'
+  const suffix = Math.random().toString(36).slice(2)
+  const path = `${conversationId}/${Date.now()}-${suffix}.${extension}`
+  const response = await fetch(uri)
+  if (!response.ok) throw new Error('Could not read attachment')
 
-  const { error } = await supabase.storage.from('chat-attachments').upload(path, blob)
+  const { error } = await supabase.storage.from('chat-attachments')
+    .upload(path, await response.arrayBuffer(), {
+      contentType: contentType ?? (extension === 'jpg' ? 'image/jpeg' : `image/${extension}`),
+    })
   if (error) throw error
 
-  const { data } = supabase.storage.from('chat-attachments').getPublicUrl(path)
-  return data.publicUrl
+  return path
 }
 
 export async function getUnreadMessageCount(userId: string, userType: 'client' | 'professional') {
