@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "iKhono",
-    "slug": "ikhono-mobile",
+    "slug": "ikhono",
     "scheme": "ikhono",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -45,8 +45,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "80c6cdee-5afe-4080-89af-3afee7322b06"
+        "projectId": "9b417bc4-1661-4511-b163-b2d08c6d2cd2"
       }
-    }
+    },
+    "owner": "thobanis-team"
   }
 }
